@@ -4,18 +4,23 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 class MyWorker(context: Context, workerParams: WorkerParameters) :
-    Worker(context, workerParams) {
+    CoroutineWorker(context, workerParams) {
 
-    override fun doWork(): Result {
-        displayNotification("My Worker", "Hey, I finished my work!")
+    override suspend fun doWork(): Result {
+        withContext(Dispatchers.IO) {
+            displayNotification("My Worker", "Hey, I finished my work!")
+        }
         return Result.success()
     }
 
-    private fun displayNotification(title: String, task: String) {
+    private suspend fun displayNotification(title: String, task: String) {
 
         val notificationManager = applicationContext
             .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -27,11 +32,15 @@ class MyWorker(context: Context, workerParams: WorkerParameters) :
             )
             notificationManager.createNotificationChannel(channel)
         }
+        delay(10000)
 
         val notification = NotificationCompat.Builder(applicationContext, "simplifiedcoding")
             .setContentTitle(title)
             .setContentText(task)
             .setSmallIcon(R.mipmap.ic_launcher)
         notificationManager.notify(1, notification.build())
+
+
+
     }
 }
